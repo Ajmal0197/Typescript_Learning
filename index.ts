@@ -21,7 +21,14 @@ let person: { name: string; age: number } = {
 TUPLES 
 (A tuple in TypeScript is an array with a fixed number of elements where each element can have a different type. Tuples are useful when you want to represent a group of values with known types and order.
 eg: const [getter, setter] = useState(second)) */
-let tuple: [number, boolean, string] = [1, false, "hi"];
+// Define a tuple type for the location
+type Location = [string, number, number];
+// Create a tuple instance
+const userLocation: Location = ["New York", 40.7128, -74.006];
+// Accessing elements in the tuple
+const city: string = userLocation[0];
+const latitude: number = userLocation[1];
+const longitude: number = userLocation[2];
 
 /* 
 ENUMS 
@@ -31,6 +38,8 @@ enum UserRole {
   User = "USER",
   Guest = "GUEST",
 }
+
+let role: UserRole = UserRole.Guest;
 
 function checkAccess(role: UserRole) {
   if (role === UserRole.Admin) {
@@ -60,12 +69,10 @@ let input: unknown;
 input = "Hello, world!"; // Assign a string
 input = 42; // Assign a number
 input = { name: "Alice", age: 30 }; // Assign an object
-
 // Type checking is required before using the value
 if (typeof input === "string") {
   console.log(input.toUpperCase()); // TypeScript knows 'input' is a string here
 }
-
 // Type assertions can also be used
 input = "TypeScript";
 console.log((input as string).length); // Use 'as' to assert type
@@ -78,7 +85,6 @@ NEVER
 function throwError(message: string): never {
   throw new Error(message);
 }
-
 // A function that never returns
 function infiniteLoop(): never {
   while (true) {
@@ -94,7 +100,6 @@ VOID
 function logMessage(message: string): void {
   console.log(message);
 }
-
 // Usage
 logMessage("Hello, TypeScript!"); // Output: "Hello, TypeScript!"
 
@@ -115,6 +120,14 @@ let user: User = {
   name: "Alice",
   email: "alice@example.com",
 };
+
+let userArr: User[] = [
+  {
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com",
+  },
+];
 
 function getUserEmail(user: User): string {
   return user.email;
@@ -139,6 +152,16 @@ interface Name {
 interface Age {
   age: number;
 }
+/*
+or
+type Name =  {
+  firstName: string;
+  lastName: string;
+}
+type Age =  {
+  age: number;
+}
+*/
 // Create an intersection type
 type Person = Name & Age;
 // A variable of type Person must have all properties
@@ -301,8 +324,7 @@ Type assertions in TypeScript allow you to explicitly tell the compiler what the
 */
 let someValue: any = "Hello, World!";
 let strLength: number = (<string>someValue).length;
-
-let someValue1: any = "Hello, World!";
+//or
 let strLength1: number = (someValue as string).length;
 
 /*
@@ -340,12 +362,12 @@ function power(base: number, exponent: number = 2): number {
 console.log(power(3)); // Output: 9
 console.log(power(3, 3)); // Output: 27
 
-//  Rest Parameters
-function sum(...numbers: number[]): number {
-  return numbers.reduce((total, num) => total + num, 0);
+// Rest Parameters
+function sum(...numbers: number[]): void {
+  console.log(numbers.reduce((total, num) => total + num, 0));
 }
-console.log(sum(1, 2, 3)); // Output: 6
-console.log(sum(4, 5, 6, 7)); // Output: 22
+sum(1, 2, 3); // Output: 6
+sum(4, 5, 6, 7); // Output: 22
 
 // Function Overloading
 function display(value: string): void;
@@ -507,7 +529,7 @@ Generic Class (Box):
 The class Box<T> uses a generic type T to handle a value. You can create instances of Box with different types and get or set values while maintaining type safety.
 
 Generic Interface (Pair):
-The Pair<K, V> interface defines a key-value pair with generic types K and V. This allows the interface to be used with any combination of key and value types.
+The Pair<K, V> interface defines a key-value pair with generic types K and V. You can also create generic interfaces to define the shape of objects that can work with different data types.
 */
 // Generic Function
 function identity<T>(value: T): T {
@@ -517,6 +539,17 @@ function identity<T>(value: T): T {
 let numG = identity<number>(27);
 console.log(identity("Hello")); // Output: "Hello"
 console.log(identity(42)); // Output: 42
+console.log(identity({ name: "ajmal" })); // Output: 42
+
+// Generic function to return the first element of an array
+function getFirstElement<T>(arr: T[]): T {
+  return arr[0];
+}
+// Using the generic function with different types
+const firstNumber = getFirstElement([1, 2, 3, 4]); // number
+const firstString = getFirstElement(["a", "b", "c"]); // string
+console.log(firstNumber); // Output: 1
+console.log(firstString); // Output: "a"
 
 // Generic Class
 class Box<T> {
@@ -534,10 +567,8 @@ class Box<T> {
     this._value = value;
   }
 }
-
 const stringBox = new Box<string>("Generic String");
 console.log(stringBox.getValue()); // Output: "Generic String"
-
 const numberBox = new Box<number>(123);
 console.log(numberBox.getValue()); // Output: 123
 
@@ -546,12 +577,10 @@ interface Pair<K, V> {
   key: K;
   value: V;
 }
-
 const pair: Pair<string, number> = {
   key: "age",
   value: 30,
 };
-
 console.log(pair); // Output: { key: 'age', value: 30 }
 
 // Stack Implementation with Generics
@@ -573,6 +602,7 @@ class Stack<T> {
     return this.items[this.items.length - 1];
   }
 
+  // Below doesn't have T coz, T is used in methods where the type of the elements in the stack is relevant
   // Check if the stack is empty
   public isEmpty(): boolean {
     return this.items.length === 0;
@@ -722,23 +752,20 @@ console.log(`Point: (${pointNum.x}, ${pointNum.y})`); // Output: Point: (10, 20)
 
 /*
 TYPE GUARDS:
-Type guards allow you to create more specific type checks within code blocks.
-  Type guards are mechanisms that allow you to narrow down the type of a variable within a specific scope. They help in writing type-safe code by ensuring that variables conform to expected types before performing operations on them.
+TypeScript needs to know what type a variable is before you can perform certain operations on it. When working with union types or any situation where a variable could be one of several types, Type Guards help you narrow the type, so you can safely access properties or methods that are specific to one of those types.
 */
-function isString(value: any): value is string {
-  return typeof value === "string";
-}
-
-function example(value: string | number) {
-  if (isString(value)) {
-    console.log("It's a string:", value);
-  } else {
-    console.log("It's a number:", value);
+function printValue(value: string | number) {
+  if (typeof value === "string") {
+    console.log(`String value: ${value.toUpperCase()}`);
+  } else if (typeof value === "number") {
+    console.log(`Number value: ${value.toFixed(2)}`);
   }
 }
+printValue("Hello"); // Output: String value: HELLO
+printValue(42); // Output: Number value: 42.00
 
 /*Index Signatures
- Index Signature is a feature that allows you to define a type for object properties when the keys are not known in advance. This is particularly useful when dealing with objects that might have a flexible or dynamic set of properties.*/
+Index signatures in TypeScript allow you to define objects that can have arbitrary keys of a certain type, and you specify the type of the values associated with those keys. This is particularly useful when working with objects where the keys are not known in advance or when you want to enforce a specific structure for objects with dynamic properties.*/
 // Define an interface with an index signature
 interface StudentGrades {
   [subject: string]: number; // Key is a string, value is a number
